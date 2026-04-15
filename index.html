@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Capgemini ESG Audit Dashboard 2024</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0f0d;
+    --surface: #0f1a15;
+    --surface2: #162110;
+    --border: #1e3328;
+    --green: #00e676;
+    --green-dim: #00a352;
+    --green-glow: rgba(0,230,118,0.15);
+    --amber: #ffab40;
+    --amber-dim: #c47d00;
+    --red: #ff5252;
+    --red-dim: #b71c1c;
+    --blue: #40c4ff;
+    --text: #e8f5e9;
+    --text-dim: #7aaa8a;
+    --text-muted: #3d6649;
+    --env: #00e676;
+    --soc: #40c4ff;
+    --gov: #ffab40;
+    --sc: #ea80fc;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid noise overlay */
+  body::before {
+    content:'';
+    position:fixed;
+    inset:0;
+    background-image:
+      linear-gradient(rgba(0,230,118,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,230,118,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events:none;
+    z-index:0;
+  }
+
+  .wrapper { position:relative; z-index:1; max-width:1400px; margin:0 auto; padding:32px 24px; }
+
+  /* HEADER */
+  header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 40px;
+    padding-bottom: 28px;
+    border-bottom: 1px solid var(--border);
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .header-left {}
+  .logo-line {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+  .logo-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 12px var(--green);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity:1; transform:scale(1); }
+    50% { opacity:0.5; transform:scale(0.8); }
+  }
+  .company-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(28px, 4vw, 52px);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: var(--text);
+  }
+  h1 em {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    color: var(--green);
+  }
+  .header-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    margin-top: 8px;
+  }
+  .header-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+  }
+  .overall-score-block {
+    text-align: right;
+  }
+  .overall-score-label {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+  .overall-score-number {
+    font-family: 'Syne', sans-serif;
+    font-size: 72px;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--green);
+    text-shadow: 0 0 40px rgba(0,230,118,0.4);
+  }
+  .overall-score-denom {
+    font-size: 18px;
+    color: var(--text-muted);
+  }
+  .overall-grade {
+    display: inline-block;
+    background: var(--green-glow);
+    border: 1px solid var(--green-dim);
+    color: var(--green);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    padding: 4px 12px;
+    border-radius: 2px;
+    text-transform: uppercase;
+  }
+
+  /* PILLAR SCORECARDS */
+  .pillars-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  @media(max-width:900px) { .pillars-grid { grid-template-columns: repeat(2,1fr); } }
+  @media(max-width:500px) { .pillars-grid { grid-template-columns: 1fr; } }
+
+  .pillar-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    cursor: default;
+    transition: border-color 0.3s, transform 0.2s;
+  }
+  .pillar-card::before {
+    content:'';
+    position:absolute;
+    top:0; left:0; right:0;
+    height:2px;
+  }
+  .pillar-card.env::before { background: var(--env); box-shadow: 0 0 10px var(--env); }
+  .pillar-card.soc::before { background: var(--soc); box-shadow: 0 0 10px var(--soc); }
+  .pillar-card.gov::before { background: var(--gov); box-shadow: 0 0 10px var(--gov); }
+  .pillar-card.sc::before  { background: var(--sc);  box-shadow: 0 0 10px var(--sc); }
+
+  .pillar-card:hover { transform: translateY(-3px); }
+  .pillar-card.env:hover { border-color: var(--env); }
+  .pillar-card.soc:hover { border-color: var(--soc); }
+  .pillar-card.gov:hover { border-color: var(--gov); }
+  .pillar-card.sc:hover  { border-color: var(--sc); }
+
+  .pillar-icon { font-size: 22px; margin-bottom: 10px; }
+  .pillar-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .pillar-score-row {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .pillar-score {
+    font-family: 'Syne', sans-serif;
+    font-size: 40px;
+    font-weight: 800;
+    line-height: 1;
+  }
+  .pillar-card.env .pillar-score { color: var(--env); }
+  .pillar-card.soc .pillar-score { color: var(--soc); }
+  .pillar-card.gov .pillar-score { color: var(--gov); }
+  .pillar-card.sc  .pillar-score { color: var(--sc); }
+
+  .pillar-denom { font-size: 13px; color: var(--text-muted); }
+  .pillar-bar-track {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+  .pillar-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 1.5s cubic-bezier(0.4,0,0.2,1);
+  }
+  .pillar-card.env .pillar-bar-fill { background: var(--env); }
+  .pillar-card.soc .pillar-bar-fill { background: var(--soc); }
+  .pillar-card.gov .pillar-bar-fill { background: var(--gov); }
+  .pillar-card.sc  .pillar-bar-fill { background: var(--sc); }
+
+  .pillar-items { font-size: 10px; color: var(--text-muted); letter-spacing: 0.05em; }
+
+  /* MAIN CONTENT GRID */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+  @media(max-width:1000px) { .main-grid { grid-template-columns: 1fr; } }
+
+  /* AUDIT TABLE */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .panel-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .panel-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+  .panel-sub {
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+  }
+  .filter-tabs {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .filter-tab {
+    padding: 4px 10px;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    cursor: pointer;
+    color: var(--text-muted);
+    background: transparent;
+    transition: all 0.2s;
+    font-family: 'DM Mono', monospace;
+  }
+  .filter-tab:hover, .filter-tab.active { color: var(--bg); }
+  .filter-tab.all.active { background: var(--text); border-color: var(--text); color: var(--bg); }
+  .filter-tab.env.active { background: var(--env); border-color: var(--env); }
+  .filter-tab.soc.active { background: var(--soc); border-color: var(--soc); }
+  .filter-tab.gov.active { background: var(--gov); border-color: var(--gov); }
+  .filter-tab.sc.active  { background: var(--sc);  border-color: var(--sc); }
+
+  .audit-table-wrap { overflow-x: auto; }
+  table { width:100%; border-collapse: collapse; font-size: 11px; }
+  thead th {
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    font-weight: 500;
+  }
+  tbody tr {
+    border-bottom: 1px solid rgba(30,51,40,0.5);
+    transition: background 0.15s;
+  }
+  tbody tr:hover { background: var(--surface2); }
+  tbody tr.hidden { display: none; }
+  td { padding: 10px 14px; vertical-align: middle; }
+  td.audit-point { color: var(--text); font-size: 11px; max-width: 200px; }
+  td.category-cell { color: var(--text-dim); font-size: 10px; }
+  td.status-cell { max-width: 150px; color: var(--text-dim); font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  td.gap-cell { font-size: 10px; }
+
+  .pillar-tag {
+    display: inline-block;
+    font-size: 8px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 2px;
+    font-weight: 600;
+  }
+  .pillar-tag.env { color: var(--env); background: rgba(0,230,118,0.1); border: 1px solid rgba(0,230,118,0.2); }
+  .pillar-tag.soc { color: var(--soc); background: rgba(64,196,255,0.1); border: 1px solid rgba(64,196,255,0.2); }
+  .pillar-tag.gov { color: var(--gov); background: rgba(255,171,64,0.1); border: 1px solid rgba(255,171,64,0.2); }
+  .pillar-tag.sc  { color: var(--sc);  background: rgba(234,128,252,0.1); border: 1px solid rgba(234,128,252,0.2); }
+
+  .score-dots {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+  }
+  .score-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--border);
+  }
+  .score-dot.filled.s5 { background: var(--green); box-shadow: 0 0 4px var(--green); }
+  .score-dot.filled.s4 { background: #b2ff59; }
+  .score-dot.filled.s3 { background: var(--amber); }
+  .score-dot.filled.s2 { background: var(--red); }
+  .score-dot.filled.s1 { background: var(--red); }
+
+  .priority-badge {
+    font-size: 8px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 2px;
+  }
+  .priority-badge.high { color: var(--red); background: rgba(255,82,82,0.1); border: 1px solid rgba(255,82,82,0.2); }
+  .priority-badge.medium { color: var(--amber); background: rgba(255,171,64,0.1); border: 1px solid rgba(255,171,64,0.2); }
+  .priority-badge.low { color: var(--text-muted); background: var(--border); }
+
+  /* RIGHT PANEL */
+  .right-col { display: flex; flex-direction: column; gap: 20px; }
+
+  /* RADAR / DONUT */
+  .chart-panel { padding: 20px; }
+  .radar-wrap {
+    display: flex;
+    justify-content: center;
+    padding: 10px 0;
+  }
+
+  /* CRITICAL GAPS */
+  .gaps-list { padding: 0 0 8px; }
+  .gap-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 20px;
+    border-bottom: 1px solid rgba(30,51,40,0.5);
+    transition: background 0.15s;
+  }
+  .gap-item:hover { background: var(--surface2); }
+  .gap-item:last-child { border-bottom: none; }
+  .gap-marker {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    margin-top: 4px;
+    flex-shrink: 0;
+  }
+  .gap-marker.red { background: var(--red); box-shadow: 0 0 6px var(--red); }
+  .gap-marker.amber { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
+  .gap-marker.blue { background: var(--blue); }
+  .gap-title { font-size: 11px; color: var(--text); margin-bottom: 3px; }
+  .gap-desc { font-size: 10px; color: var(--text-muted); line-height: 1.5; }
+
+  /* BOTTOM ROW */
+  .bottom-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 32px;
+  }
+  @media(max-width:900px) { .bottom-row { grid-template-columns: 1fr; } }
+
+  .stat-panel { padding: 20px; }
+  .stat-list { display: flex; flex-direction: column; gap: 14px; margin-top: 4px; }
+  .stat-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .stat-label { font-size: 10px; color: var(--text-muted); letter-spacing: 0.05em; }
+  .stat-value { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; color: var(--text); }
+  .stat-bar-track { height: 3px; background: var(--border); border-radius: 2px; margin-top: 4px; overflow: hidden; }
+  .stat-bar-fill { height: 100%; border-radius: 2px; }
+
+  /* WEIGHTED SCORE CHART */
+  .wscore-bars { margin-top: 10px; display: flex; flex-direction: column; gap: 10px; }
+  .wscore-row { display: flex; flex-direction: column; gap: 4px; }
+  .wscore-meta { display: flex; justify-content: space-between; font-size: 10px; }
+  .wscore-name { color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
+  .wscore-val { color: var(--text-muted); }
+  .wscore-track { height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .wscore-fill { height: 100%; border-radius: 3px; transition: width 1.5s ease; }
+
+  /* OWNER TABLE */
+  .owner-table { width: 100%; font-size: 10px; }
+  .owner-table thead th { font-size: 9px; }
+  .owner-table td, .owner-table th { padding: 8px 14px; }
+  .owner-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    font-size: 10px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+  }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+  }
+  .footer-brand { color: var(--text-dim); }
+  .footer-brand span { color: var(--green); }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(20px); }
+    to { opacity:1; transform:translateY(0); }
+  }
+  .pillar-card { animation: fadeUp 0.6s ease both; }
+  .pillar-card:nth-child(1) { animation-delay: 0.1s; }
+  .pillar-card:nth-child(2) { animation-delay: 0.2s; }
+  .pillar-card:nth-child(3) { animation-delay: 0.3s; }
+  .pillar-card:nth-child(4) { animation-delay: 0.4s; }
+  .panel { animation: fadeUp 0.6s ease 0.5s both; }
+
+  /* SVG RADAR */
+  .radar-container svg text { font-family: 'DM Mono', monospace; }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-left">
+      <div class="logo-line">
+        <div class="logo-dot"></div>
+        <div class="company-name">Capgemini SE</div>
+      </div>
+      <h1>ESG <em>Audit</em><br>Dashboard</h1>
+      <div class="header-meta">FISCAL YEAR 2024 &nbsp;·&nbsp; AUDIT CYCLE Q4 &nbsp;·&nbsp; 25 KPIs TRACKED &nbsp;·&nbsp; 4 PILLARS</div>
+    </div>
+    <div class="header-right">
+      <div class="overall-score-block">
+        <div class="overall-score-label">Overall Weighted Score</div>
+        <div class="overall-score-number">168<span class="overall-score-denom">/250</span></div>
+      </div>
+      <div class="overall-grade">Performance: Strong</div>
+    </div>
+  </header>
+
+  <!-- PILLAR SCORECARDS -->
+  <div class="pillars-grid">
+    <div class="pillar-card env">
+      <div class="pillar-icon">🌿</div>
+      <div class="pillar-name">Environmental</div>
+      <div class="pillar-score-row">
+        <div class="pillar-score">3.5</div>
+        <div class="pillar-denom">/ 5.0</div>
+      </div>
+      <div class="pillar-bar-track">
+        <div class="pillar-bar-fill" style="width:70%"></div>
+      </div>
+      <div class="pillar-items">11 audit points &nbsp;·&nbsp; Weighted: 67/110</div>
+    </div>
+    <div class="pillar-card soc">
+      <div class="pillar-icon">👥</div>
+      <div class="pillar-name">Social</div>
+      <div class="pillar-score-row">
+        <div class="pillar-score">3.7</div>
+        <div class="pillar-denom">/ 5.0</div>
+      </div>
+      <div class="pillar-bar-track">
+        <div class="pillar-bar-fill" style="width:74%"></div>
+      </div>
+      <div class="pillar-items">6 audit points &nbsp;·&nbsp; Weighted: 34/60</div>
+    </div>
+    <div class="pillar-card gov">
+      <div class="pillar-icon">⚖️</div>
+      <div class="pillar-name">Governance</div>
+      <div class="pillar-score-row">
+        <div class="pillar-score">4.8</div>
+        <div class="pillar-denom">/ 5.0</div>
+      </div>
+      <div class="pillar-bar-track">
+        <div class="pillar-bar-fill" style="width:96%"></div>
+      </div>
+      <div class="pillar-items">5 audit points &nbsp;·&nbsp; Weighted: 38/50</div>
+    </div>
+    <div class="pillar-card sc">
+      <div class="pillar-icon">🔗</div>
+      <div class="pillar-name">Supply Chain</div>
+      <div class="pillar-score-row">
+        <div class="pillar-score">4.7</div>
+        <div class="pillar-denom">/ 5.0</div>
+      </div>
+      <div class="pillar-bar-track">
+        <div class="pillar-bar-fill" style="width:93%"></div>
+      </div>
+      <div class="pillar-items">3 audit points &nbsp;·&nbsp; Weighted: 28/30</div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-grid">
+    <!-- AUDIT TABLE -->
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">Audit Point Detail</div>
+          <div class="panel-sub">All 25 KPIs &nbsp;·&nbsp; Click pillar to filter</div>
+        </div>
+        <div class="filter-tabs">
+          <button class="filter-tab all active" onclick="filterTable('all')">All</button>
+          <button class="filter-tab env" onclick="filterTable('Environmental')">Env</button>
+          <button class="filter-tab soc" onclick="filterTable('Social')">Social</button>
+          <button class="filter-tab gov" onclick="filterTable('Governance')">Gov</button>
+          <button class="filter-tab sc" onclick="filterTable('Supply Chain')">Supply</button>
+        </div>
+      </div>
+      <div class="audit-table-wrap">
+        <table id="auditTable">
+          <thead>
+            <tr>
+              <th>Pillar</th>
+              <th>Audit Point</th>
+              <th>Status</th>
+              <th>Gap</th>
+              <th>Score</th>
+              <th>Priority</th>
+            </tr>
+          </thead>
+          <tbody id="auditBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="right-col">
+      <!-- RADAR -->
+      <div class="panel chart-panel">
+        <div class="panel-header" style="padding:0 0 12px;">
+          <div class="panel-title">Pillar Radar</div>
+          <div class="panel-sub">Score vs Target</div>
+        </div>
+        <div class="radar-wrap">
+          <svg id="radarSvg" width="280" height="260" viewBox="0 0 280 260"></svg>
+        </div>
+      </div>
+
+      <!-- CRITICAL GAPS -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Critical Gaps</div>
+          <div class="panel-sub">Requires attention</div>
+        </div>
+        <div class="gaps-list">
+          <div class="gap-item">
+            <div class="gap-marker red"></div>
+            <div>
+              <div class="gap-title">Scope 3 GHG Emissions</div>
+              <div class="gap-desc">727,139 tCO2e — challenges in goods & services procurement. Score: 2/5</div>
+            </div>
+          </div>
+          <div class="gap-item">
+            <div class="gap-marker red"></div>
+            <div>
+              <div class="gap-title">Gender Diversity — Exec Layer</div>
+              <div class="gap-desc">26% vs 30% target. ~4% gap in executive committee representation</div>
+            </div>
+          </div>
+          <div class="gap-item">
+            <div class="gap-marker red"></div>
+            <div>
+              <div class="gap-title">Pay Equity — UK Mean Gap</div>
+              <div class="gap-desc">18% mean gap (UK 2023). Industry-level issue, active monitoring required</div>
+            </div>
+          </div>
+          <div class="gap-item">
+            <div class="gap-marker amber"></div>
+            <div>
+              <div class="gap-title">Water Withdrawal Reporting</div>
+              <div class="gap-desc">Data not surfaced in summary reports. Full PDF only. Score: 1/5</div>
+            </div>
+          </div>
+          <div class="gap-item">
+            <div class="gap-marker amber"></div>
+            <div>
+              <div class="gap-title">Supplier SBTi Coverage</div>
+              <div class="gap-desc">42% of spend vs 50% target by 2025. Progressing but behind schedule</div>
+            </div>
+          </div>
+          <div class="gap-item">
+            <div class="gap-marker blue"></div>
+            <div>
+              <div class="gap-title">Renewable Energy</div>
+              <div class="gap-desc">98% vs 100% target. Near complete, &lt;2% gap remaining for 2025</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM ROW -->
+  <div class="bottom-row">
+    <!-- KEY METRICS -->
+    <div class="panel stat-panel">
+      <div class="panel-header" style="padding:0 0 14px;">
+        <div class="panel-title">Key Metrics</div>
+      </div>
+      <div class="stat-list">
+        <div class="stat-row">
+          <div class="stat-label">Renewable Energy Usage</div>
+          <div class="stat-value" style="color:var(--green)">98%</div>
+          <div class="stat-bar-track">
+            <div class="stat-bar-fill" style="width:98%;background:var(--green)"></div>
+          </div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-label">Board Independence</div>
+          <div class="stat-value" style="color:var(--gov)">82%</div>
+          <div class="stat-bar-track">
+            <div class="stat-bar-fill" style="width:82%;background:var(--gov)"></div>
+          </div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-label">Female Workforce</div>
+          <div class="stat-value" style="color:var(--soc)">40%</div>
+          <div class="stat-bar-track">
+            <div class="stat-bar-fill" style="width:40%;background:var(--soc)"></div>
+          </div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-label">Supplier Code of Conduct Sign-off</div>
+          <div class="stat-value" style="color:var(--sc)">100%</div>
+          <div class="stat-bar-track">
+            <div class="stat-bar-fill" style="width:100%;background:var(--sc)"></div>
+          </div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-label">Employee Engagement (Belonging)</div>
+          <div class="stat-value" style="color:var(--green)">&gt;80%</div>
+          <div class="stat-bar-track">
+            <div class="stat-bar-fill" style="width:80%;background:var(--green)"></div>
+          </div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-label">Avg. Training Hours / Employee</div>
+          <div class="stat-value" style="color:var(--soc)">70+ hrs</div>
+          <div class="stat-bar-track">
+            <div class="stat-bar-fill" style="width:85%;background:var(--soc)"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WEIGHTED SCORES -->
+    <div class="panel stat-panel">
+      <div class="panel-header" style="padding:0 0 14px;">
+        <div class="panel-title">Weighted Scores</div>
+        <div class="panel-sub">Top scoring audit points</div>
+      </div>
+      <div class="wscore-bars" id="wscoreBars"></div>
+    </div>
+
+    <!-- RESPONSIBLE OWNERS -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Responsible Owners</div>
+        <div class="panel-sub">By audit count</div>
+      </div>
+      <div class="audit-table-wrap">
+        <table class="owner-table">
+          <thead>
+            <tr>
+              <th>Owner</th>
+              <th>Count</th>
+              <th>Avg Score</th>
+            </tr>
+          </thead>
+          <tbody id="ownerBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- SDG IMPACT SECTION -->
+  <div class="panel" style="margin-bottom:24px;">
+    <div class="panel-header">
+      <div>
+        <div class="panel-title">Independent SDG Impact Metrics</div>
+        <div class="panel-sub">Source: Sustainable Platform · Calculated 13 Apr 2026 · Unscaled contribution totals 54.8%</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <span style="font-size:10px;color:var(--text-muted);letter-spacing:0.1em;">CLIMATE ALIGNMENT</span>
+        <span style="background:rgba(0,230,118,0.15);border:1px solid var(--green-dim);color:var(--green);font-size:10px;padding:3px 10px;border-radius:2px;letter-spacing:0.1em;">✦ Category A — 1.5°C Aligned</span>
+      </div>
+    </div>
+    <div style="padding:24px 20px 8px;">
+      <!-- SDG Bars -->
+      <div id="sdgChart" style="display:flex;align-items:flex-end;gap:6px;height:160px;padding-bottom:8px;overflow-x:auto;min-width:0;"></div>
+      <div style="font-size:9px;color:var(--text-muted);margin-top:10px;letter-spacing:0.08em;">
+        Note: SDG chart values are scaled to 100%. The unscaled contribution totals 54.8%.
+      </div>
+    </div>
+    <!-- Climate Alignment Bar -->
+    <div style="padding:16px 20px 20px;border-top:1px solid var(--border);margin-top:8px;">
+      <div style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--text);margin-bottom:14px;">Alignment to Climate Change Scenarios</div>
+      <div style="position:relative;">
+        <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text-muted);letter-spacing:0.1em;margin-bottom:6px;">
+          <span>1.5°C</span><span>2°C</span><span>2°C–4°C</span><span>&gt;4°C</span>
+        </div>
+        <div style="height:10px;background:linear-gradient(90deg,var(--green) 0%,#b2ff59 25%,var(--amber) 50%,var(--red) 100%);border-radius:5px;position:relative;">
+          <div style="position:absolute;left:8%;top:-6px;width:2px;height:22px;background:white;border-radius:2px;box-shadow:0 0 8px rgba(255,255,255,0.8);"></div>
+          <div style="position:absolute;left:calc(8% - 20px);top:-28px;font-size:9px;color:var(--green);font-family:'Syne',sans-serif;font-weight:700;white-space:nowrap;">▼ Capgemini</div>
+        </div>
+        <div style="display:flex;gap:16px;margin-top:14px;flex-wrap:wrap;">
+          <span style="display:flex;align-items:center;gap:6px;font-size:10px;color:var(--text-muted)"><span style="width:10px;height:10px;border-radius:50%;background:var(--green);display:inline-block"></span>Category A — 1.5°C</span>
+          <span style="display:flex;align-items:center;gap:6px;font-size:10px;color:var(--text-muted)"><span style="width:10px;height:10px;border-radius:50%;background:#b2ff59;display:inline-block"></span>Category B — 2°C</span>
+          <span style="display:flex;align-items:center;gap:6px;font-size:10px;color:var(--text-muted)"><span style="width:10px;height:10px;border-radius:50%;background:var(--amber);display:inline-block"></span>Category C — 2–4°C</span>
+          <span style="display:flex;align-items:center;gap:6px;font-size:10px;color:var(--text-muted)"><span style="width:10px;height:10px;border-radius:50%;background:var(--red);display:inline-block"></span>Category D — &gt;4°C</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SDG IMPACT SECTION -->
+  <div class="panel" style="margin-bottom:24px;">
+    <div class="panel-header">
+      <div>
+        <div class="panel-title">Independent SDG Impact Metrics</div>
+        <div class="panel-sub">Scaled to 100% · Unscaled contribution total: 54.8% · Source: Sustainable Platform, 13 Apr 2026</div>
+      </div>
+      <div style="font-size:10px;color:var(--text-muted);letter-spacing:0.1em">17 UN GOALS TRACKED</div>
+    </div>
+    <div style="padding:20px 20px 10px;">
+      <div style="overflow-x:auto;">
+        <svg id="sdgChart" width="100%" viewBox="0 0 1100 320" preserveAspectRatio="xMidYMid meet" style="display:block;"></svg>
+      </div>
+      <div style="margin-top:16px;display:flex;flex-wrap:wrap;gap:8px;" id="sdgLegend"></div>
+      <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">
+        <div style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--text);margin-bottom:12px;">Alignment to Climate Change Scenarios</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;" id="climateScenarios"></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div>CAPGEMINI SE &nbsp;·&nbsp; ESG AUDIT DASHBOARD &nbsp;·&nbsp; FY2024 &nbsp;·&nbsp; CONFIDENTIAL</div>
+    <div class="footer-brand">Powered by <span>ESG Intelligence Platform</span></div>
+    <div id="footerDate"></div>
+  </footer>
+
+</div>
+
+<script>
+const data = [
+  {pillar:"Environmental",category:"Climate Change",point:"Scope 1 GHG Emissions",status:"85,645 tCO2e (Scope 1+2)",gap:"On Track (-10% YoY)",score:4,priority:"High",owner:"CSO",wScore:8},
+  {pillar:"Environmental",category:"Climate Change",point:"Scope 2 GHG Emissions",status:"Included in Scope 1+2",gap:"On Track",score:4,priority:"High",owner:"CSO",wScore:8},
+  {pillar:"Environmental",category:"Climate Change",point:"Scope 3 GHG Emissions",status:"727,139 tCO2e",gap:"Challenges in Goods/Services",score:2,priority:"High",owner:"CSO",wScore:4},
+  {pillar:"Environmental",category:"Climate Change",point:"Renewable Energy Usage",status:"98% (2024)",gap:"Gap < 2%",score:4,priority:"High",owner:"Ops Lead",wScore:8},
+  {pillar:"Environmental",category:"Climate Change",point:"Energy Consumption",status:"Data Centers Efficiency x7",gap:"On Track",score:4,priority:"High",owner:"Ops Lead",wScore:8},
+  {pillar:"Environmental",category:"Climate Change",point:"Energy Intensity",status:"Improving",gap:"On Track",score:4,priority:"High",owner:"Ops Lead",wScore:8},
+  {pillar:"Environmental",category:"Climate Change",point:"SBTi Net-Zero Commitment",status:"Validated (Net-Zero Standard)",gap:"Compliant",score:5,priority:"High",owner:"CSO",wScore:10},
+  {pillar:"Environmental",category:"Water Management",point:"Water Withdrawal",status:"Reported in full PDF",gap:"Data not in summary",score:1,priority:"Medium",owner:"Facilities",wScore:1},
+  {pillar:"Environmental",category:"Waste Management",point:"Total Waste Generated",status:"Progressing",gap:"On Track",score:4,priority:"Medium",owner:"Facilities",wScore:4},
+  {pillar:"Environmental",category:"Waste Management",point:"Waste Diversion Rate",status:"Zero to Landfill targeted",gap:"On Track",score:4,priority:"Medium",owner:"Facilities",wScore:4},
+  {pillar:"Environmental",category:"EMS",point:"ISO 14001 Certification",status:"98% of headcount covered",gap:"Near Complete",score:4,priority:"Medium",owner:"Quality",wScore:4},
+  {pillar:"Social",category:"Workforce Diversity",point:"Gender Diversity",status:"~40% workforce, ~26% Exec",gap:"Gap in Exec layer",score:2,priority:"High",owner:"CHRO",wScore:4},
+  {pillar:"Social",category:"Workforce Diversity",point:"Ethnic/Racial Diversity",status:"Programs in place (UK/US)",gap:"Ongoing",score:3,priority:"High",owner:"CHRO",wScore:6},
+  {pillar:"Social",category:"Workforce Diversity",point:"Pay Equity",status:"18% Mean Gap (UK 2023)",gap:"Gap exists (Industry issue)",score:2,priority:"High",owner:"CHRO",wScore:4},
+  {pillar:"Social",category:"Employee Wellbeing",point:"Employee Engagement Score",status:">80% Achieved",gap:"Compliant",score:5,priority:"Medium",owner:"HR",wScore:5},
+  {pillar:"Social",category:"Employee Wellbeing",point:"Training Hours",status:"70+ hours Achieved",gap:"Compliant",score:5,priority:"Medium",owner:"L&D",wScore:5},
+  {pillar:"Social",category:"Human Rights",point:"Human Rights Due Diligence",status:"Implemented",gap:"Compliant",score:5,priority:"High",owner:"Legal",wScore:10},
+  {pillar:"Governance",category:"Board Structure",point:"Board Independence",status:"82% (2024)",gap:"Exceeds Target",score:5,priority:"High",owner:"Board Sec",wScore:10},
+  {pillar:"Governance",category:"Board Structure",point:"ESG Committee",status:"Yes (Ethics/CSR Comm)",gap:"Compliant",score:5,priority:"High",owner:"Board Sec",wScore:10},
+  {pillar:"Governance",category:"Board Structure",point:"Board Diversity",status:"45% Women",gap:"Exceeds Target",score:5,priority:"Medium",owner:"Board Sec",wScore:5},
+  {pillar:"Governance",category:"Ethics",point:"Anti-Corruption Training",status:"High coverage",gap:"On Track",score:4,priority:"High",owner:"Compliance",wScore:8},
+  {pillar:"Governance",category:"Executive Pay",point:"ESG-Linked Compensation",status:"Yes (Variable component)",gap:"Compliant",score:5,priority:"Medium",owner:"Remuneration Comm",wScore:5},
+  {pillar:"Supply Chain",category:"Supplier Management",point:"Supplier ESG Assessment",status:"In Line / Progressing",gap:"On Track",score:4,priority:"High",owner:"CPO",wScore:8},
+  {pillar:"Supply Chain",category:"Supplier Management",point:"Supplier Code of Conduct",status:"Mandatory for all",gap:"Compliant",score:5,priority:"High",owner:"CPO",wScore:10},
+  {pillar:"Supply Chain",category:"Traceability",point:"Conflict Minerals",status:"Yes",gap:"Compliant",score:5,priority:"High",owner:"Legal",wScore:10},
+];
+
+const pillarClass = { "Environmental":"env","Social":"soc","Governance":"gov","Supply Chain":"sc" };
+
+function scoreDotsHTML(score) {
+  let html = '<div class="score-dots">';
+  for(let i=1;i<=5;i++) {
+    html += `<div class="score-dot ${i<=score?'filled s'+score:''}"></div>`;
+  }
+  html += '</div>';
+  return html;
+}
+
+// Build table
+function buildTable(filter='all') {
+  const tbody = document.getElementById('auditBody');
+  tbody.innerHTML = '';
+  data.forEach(r => {
+    const pc = pillarClass[r.pillar];
+    const tr = document.createElement('tr');
+    if(filter!=='all' && r.pillar!==filter) tr.classList.add('hidden');
+    tr.innerHTML = `
+      <td><span class="pillar-tag ${pc}">${pc==='sc'?'Supply':r.pillar.substring(0,3)}</span></td>
+      <td class="audit-point">${r.point}</td>
+      <td class="status-cell" title="${r.status}">${r.status}</td>
+      <td class="gap-cell" style="color:${r.gap.includes('Compliant')||r.gap.includes('On Track')||r.gap.includes('Exceeds')?'var(--green-dim)':r.gap.includes('Gap')||r.gap.includes('Challenges')?'var(--red)':'var(--amber)'};font-size:10px">${r.gap}</td>
+      <td>${scoreDotsHTML(r.score)}</td>
+      <td><span class="priority-badge ${r.priority.toLowerCase()}">${r.priority}</span></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function filterTable(pillar) {
+  document.querySelectorAll('.filter-tab').forEach(b=>b.classList.remove('active'));
+  const key = pillar==='all'?'all':pillarClass[pillar]||pillar.toLowerCase();
+  const btn = document.querySelector('.filter-tab.'+( pillar==='all'?'all': pillar==='Environmental'?'env': pillar==='Social'?'soc': pillar==='Governance'?'gov': 'sc'));
+  if(btn) btn.classList.add('active');
+  document.querySelectorAll('#auditBody tr').forEach(tr=>{
+    const tag = tr.querySelector('.pillar-tag');
+    if(!tag) return;
+    if(pillar==='all') tr.classList.remove('hidden');
+    else tr.classList.toggle('hidden', !tag.classList.contains(key==='sc'?'sc':pillarClass[pillar]));
+  });
+}
+
+buildTable();
+
+// Weighted scores bar
+const topScores = [...data].sort((a,b)=>b.wScore-a.wScore).slice(0,8);
+const maxWS = 10;
+const wContainer = document.getElementById('wscoreBars');
+const wsColors = {"Environmental":"var(--env)","Social":"var(--soc)","Governance":"var(--gov)","Supply Chain":"var(--sc)"};
+topScores.forEach(r=>{
+  const div = document.createElement('div');
+  div.className = 'wscore-row';
+  div.innerHTML = `
+    <div class="wscore-meta">
+      <span class="wscore-name">${r.point}</span>
+      <span class="wscore-val">${r.wScore}</span>
+    </div>
+    <div class="wscore-track">
+      <div class="wscore-fill" style="width:${(r.wScore/maxWS)*100}%;background:${wsColors[r.pillar]}"></div>
+    </div>
+  `;
+  wContainer.appendChild(div);
+});
+
+// Owner stats
+const owners = {};
+data.forEach(r=>{
+  if(!owners[r.owner]) owners[r.owner]={count:0,totalScore:0};
+  owners[r.owner].count++;
+  owners[r.owner].totalScore+=r.score;
+});
+const ownerArr = Object.entries(owners).map(([k,v])=>({name:k,count:v.count,avg:(v.totalScore/v.count).toFixed(1)})).sort((a,b)=>b.count-a.count);
+const ownerBody = document.getElementById('ownerBody');
+const ocColors = ['var(--green)','var(--soc)','var(--gov)','var(--sc)','var(--amber)','var(--green-dim)','var(--text-dim)'];
+ownerArr.forEach((o,i)=>{
+  const tr = document.createElement('tr');
+  const avgNum = parseFloat(o.avg);
+  const scoreColor = avgNum>=4.5?'var(--green)':avgNum>=3.5?'var(--amber)':'var(--red)';
+  tr.innerHTML = `
+    <td style="color:var(--text);font-size:10px">${o.name}</td>
+    <td><span class="owner-count" style="background:${ocColors[i%ocColors.length]}22;color:${ocColors[i%ocColors.length]};border:1px solid ${ocColors[i%ocColors.length]}44">${o.count}</span></td>
+    <td style="color:${scoreColor};font-family:'Syne',sans-serif;font-weight:700;font-size:12px">${o.avg}</td>
+  `;
+  ownerBody.appendChild(tr);
+});
+
+// RADAR SVG
+function drawRadar() {
+  const svg = document.getElementById('radarSvg');
+  const cx=140, cy=130, r=100;
+  const pillars = [
+    {label:"Environmental",score:3.5,color:"var(--env)"},
+    {label:"Social",score:3.7,color:"var(--soc)"},
+    {label:"Governance",score:4.8,color:"var(--gov)"},
+    {label:"Supply Chain",score:4.7,color:"var(--sc)"},
+  ];
+  const n = pillars.length;
+  const angles = pillars.map((_,i)=> (i/n)*2*Math.PI - Math.PI/2);
+
+  // Grid
+  for(let ring=1;ring<=5;ring++) {
+    const rr = (ring/5)*r;
+    const pts = angles.map(a=>`${cx+rr*Math.cos(a)},${cy+rr*Math.sin(a)}`).join(' ');
+    const poly = document.createElementNS("http://www.w3.org/2000/svg","polygon");
+    poly.setAttribute("points",pts);
+    poly.setAttribute("fill","none");
+    poly.setAttribute("stroke", ring===5?"rgba(0,230,118,0.25)":"rgba(30,51,40,0.6)");
+    poly.setAttribute("stroke-width","1");
+    svg.appendChild(poly);
+    // ring label
+    const label = document.createElementNS("http://www.w3.org/2000/svg","text");
+    label.setAttribute("x",cx+2);
+    label.setAttribute("y",cy - rr + 3);
+    label.setAttribute("fill","rgba(61,102,73,0.8)");
+    label.setAttribute("font-size","7");
+    label.textContent=ring;
+    svg.appendChild(label);
+  }
+
+  // Axes
+  angles.forEach((a,i)=>{
+    const line = document.createElementNS("http://www.w3.org/2000/svg","line");
+    line.setAttribute("x1",cx); line.setAttribute("y1",cy);
+    line.setAttribute("x2",cx+r*Math.cos(a)); line.setAttribute("y2",cy+r*Math.sin(a));
+    line.setAttribute("stroke","rgba(30,51,40,0.6)"); line.setAttribute("stroke-width","1");
+    svg.appendChild(line);
+    // Label
+    const lx = cx+(r+22)*Math.cos(a);
+    const ly = cy+(r+22)*Math.sin(a);
+    const text = document.createElementNS("http://www.w3.org/2000/svg","text");
+    text.setAttribute("x",lx); text.setAttribute("y",ly+4);
+    text.setAttribute("fill","rgba(122,170,138,0.9)");
+    text.setAttribute("font-size","9");
+    text.setAttribute("text-anchor","middle");
+    text.textContent=pillars[i].label==="Supply Chain"?"Supply":pillars[i].label;
+    svg.appendChild(text);
+  });
+
+  // Target polygon (5/5)
+  const tPts = angles.map(a=>`${cx+r*Math.cos(a)},${cy+r*Math.sin(a)}`).join(' ');
+  const tPoly = document.createElementNS("http://www.w3.org/2000/svg","polygon");
+  tPoly.setAttribute("points",tPts);
+  tPoly.setAttribute("fill","rgba(0,230,118,0.04)");
+  tPoly.setAttribute("stroke","rgba(0,230,118,0.2)");
+  tPoly.setAttribute("stroke-dasharray","3,3");
+  svg.appendChild(tPoly);
+
+  // Score polygon
+  const sPts = pillars.map((p,i)=>{
+    const rr=(p.score/5)*r;
+    return `${cx+rr*Math.cos(angles[i])},${cy+rr*Math.sin(angles[i])}`;
+  }).join(' ');
+  const sPoly = document.createElementNS("http://www.w3.org/2000/svg","polygon");
+  sPoly.setAttribute("points",sPts);
+  sPoly.setAttribute("fill","rgba(0,230,118,0.12)");
+  sPoly.setAttribute("stroke","var(--green)");
+  sPoly.setAttribute("stroke-width","2");
+  svg.appendChild(sPoly);
+
+  // Score dots
+  pillars.forEach((p,i)=>{
+    const rr=(p.score/5)*r;
+    const dot = document.createElementNS("http://www.w3.org/2000/svg","circle");
+    dot.setAttribute("cx",cx+rr*Math.cos(angles[i]));
+    dot.setAttribute("cy",cy+rr*Math.sin(angles[i]));
+    dot.setAttribute("r","4");
+    dot.setAttribute("fill",p.color);
+    svg.appendChild(dot);
+    const val = document.createElementNS("http://www.w3.org/2000/svg","text");
+    val.setAttribute("x",cx+(rr-12)*Math.cos(angles[i]));
+    val.setAttribute("y",cy+(rr-12)*Math.sin(angles[i])+4);
+    val.setAttribute("fill",p.color);
+    val.setAttribute("font-size","9");
+    val.setAttribute("text-anchor","middle");
+    val.setAttribute("font-weight","bold");
+    val.textContent=p.score;
+    svg.appendChild(val);
+  });
+}
+drawRadar();
+
+// SDG Chart
+const sdgs = [
+  {num:1,label:"No Poverty",color:"#e5243b",val:2.8},
+  {num:2,label:"Zero Hunger",color:"#dda63a",val:3.1},
+  {num:3,label:"Good Health",color:"#4c9f38",val:5.2},
+  {num:4,label:"Quality Education",color:"#c5192d",val:13.8},
+  {num:5,label:"Gender Equality",color:"#ff3a21",val:8.5},
+  {num:6,label:"Clean Water",color:"#26bde2",val:3.0},
+  {num:7,label:"Clean Energy",color:"#fcc30b",val:10.4},
+  {num:8,label:"Decent Work",color:"#a21942",val:7.5},
+  {num:9,label:"Industry & Innovation",color:"#fd6925",val:13.2},
+  {num:10,label:"Reduced Inequalities",color:"#dd1367",val:7.8},
+  {num:11,label:"Sustainable Cities",color:"#fd9d24",val:14.2},
+  {num:12,label:"Responsible Consumption",color:"#bf8b2e",val:2.1},
+  {num:13,label:"Climate Action",color:"#3f7e44",val:8.8},
+  {num:14,label:"Life Below Water",color:"#0a97d9",val:1.2},
+  {num:15,label:"Life on Land",color:"#56c02b",val:2.4},
+  {num:16,label:"Peace & Justice",color:"#00689d",val:6.8},
+  {num:17,label:"Partnerships",color:"#19486a",val:9.0},
+];
+const maxVal = Math.max(...sdgs.map(s=>s.val));
+const chartEl = document.getElementById('sdgChart');
+sdgs.forEach(s=>{
+  const barH = Math.round((s.val/maxVal)*130);
+  const col = document.createElement('div');
+  col.style.cssText=`display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;min-width:36px;cursor:pointer;`;
+  col.title=`SDG ${s.num}: ${s.label} — ${s.val}%`;
+  col.innerHTML=`
+    <div style="font-size:8px;color:${s.color};font-family:'Syne',sans-serif;font-weight:700;">${s.val}%</div>
+    <div style="width:100%;height:${barH}px;background:${s.color};border-radius:3px 3px 0 0;opacity:0.85;transition:opacity 0.2s;min-height:4px;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.85"></div>
+    <div style="width:28px;height:28px;background:${s.color};border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:8px;font-family:'Syne',sans-serif;font-weight:800;color:white;flex-shrink:0;">${s.num}</div>
+  `;
+  chartEl.appendChild(col);
+});
+
+// SDG DATA — scaled values from chart image
+const sdgData = [
+  {id:1, label:"No Poverty",          color:"#e5243b", val:4.2},
+  {id:2, label:"Zero Hunger",         color:"#dda63a", val:3.1},
+  {id:3, label:"Good Health",         color:"#4c9f38", val:13.8},
+  {id:4, label:"Quality Education",   color:"#c5192d", val:8.5},
+  {id:5, label:"Gender Equality",     color:"#ff3a21", val:7.6},
+  {id:6, label:"Clean Water",         color:"#26bde2", val:3.8},
+  {id:7, label:"Clean Energy",        color:"#fcc30b", val:10.5},
+  {id:8, label:"Decent Work",         color:"#a21942", val:8.2},
+  {id:9, label:"Industry & Innov.",   color:"#fd6925", val:7.9},
+  {id:10,label:"Reduced Inequal.",    color:"#dd1367", val:3.2},
+  {id:11,label:"Sustainable Cities",  color:"#fd9d24", val:14.0},
+  {id:12,label:"Responsible Consump.",color:"#bf8b2e", val:2.1},
+  {id:13,label:"Climate Action",      color:"#3f7e44", val:8.8},
+  {id:14,label:"Life Below Water",    color:"#0a97d9", val:2.4},
+  {id:15,label:"Life on Land",        color:"#56c02b", val:3.0},
+  {id:16,label:"Peace & Justice",     color:"#00689d", val:6.5},
+  {id:17,label:"Partnerships",        color:"#19486a", val:7.4},
+];
+
+function drawSDGChart() {
+  const svg = document.getElementById('sdgChart');
+  const W=1100, H=320, padL=40, padR=10, padT=20, padB=90;
+  const chartW = W - padL - padR;
+  const chartH = H - padT - padB;
+  const maxVal = 15;
+  const barW = chartW / sdgData.length;
+  const gap = barW * 0.2;
+
+  // Grid lines
+  [0,5,10,15].forEach(v => {
+    const y = padT + chartH - (v/maxVal)*chartH;
+    const line = document.createElementNS("http://www.w3.org/2000/svg","line");
+    line.setAttribute("x1",padL); line.setAttribute("x2",W-padR);
+    line.setAttribute("y1",y); line.setAttribute("y2",y);
+    line.setAttribute("stroke","rgba(30,51,40,0.7)"); line.setAttribute("stroke-width","1");
+    if(v>0) line.setAttribute("stroke-dasharray","3,4");
+    svg.appendChild(line);
+    const lbl = document.createElementNS("http://www.w3.org/2000/svg","text");
+    lbl.setAttribute("x",padL-4); lbl.setAttribute("y",y+4);
+    lbl.setAttribute("fill","rgba(61,102,73,0.9)"); lbl.setAttribute("font-size","9");
+    lbl.setAttribute("text-anchor","end"); lbl.textContent=v+"%";
+    svg.appendChild(lbl);
+  });
+
+  // Y-axis label
+  const yLabel = document.createElementNS("http://www.w3.org/2000/svg","text");
+  yLabel.setAttribute("x",10); yLabel.setAttribute("y",H/2);
+  yLabel.setAttribute("fill","rgba(61,102,73,0.8)"); yLabel.setAttribute("font-size","9");
+  yLabel.setAttribute("text-anchor","middle");
+  yLabel.setAttribute("transform",`rotate(-90,10,${H/2})`);
+  yLabel.textContent="SDG Contribution %";
+  svg.appendChild(yLabel);
+
+  sdgData.forEach((s,i) => {
+    const x = padL + i*barW + gap/2;
+    const bw = barW - gap;
+    const bh = (s.val/maxVal)*chartH;
+    const y = padT + chartH - bh;
+
+    // Glow rect
+    const glow = document.createElementNS("http://www.w3.org/2000/svg","rect");
+    glow.setAttribute("x",x-2); glow.setAttribute("y",y-2);
+    glow.setAttribute("width",bw+4); glow.setAttribute("height",bh+4);
+    glow.setAttribute("rx","3"); glow.setAttribute("fill",s.color);
+    glow.setAttribute("opacity","0.15");
+    svg.appendChild(glow);
+
+    // Bar
+    const rect = document.createElementNS("http://www.w3.org/2000/svg","rect");
+    rect.setAttribute("x",x); rect.setAttribute("y",y);
+    rect.setAttribute("width",bw); rect.setAttribute("height",bh);
+    rect.setAttribute("rx","2"); rect.setAttribute("fill",s.color);
+    rect.setAttribute("opacity","0.9");
+    svg.appendChild(rect);
+
+    // Value label
+    const vLbl = document.createElementNS("http://www.w3.org/2000/svg","text");
+    vLbl.setAttribute("x",x+bw/2); vLbl.setAttribute("y",y-4);
+    vLbl.setAttribute("fill",s.color); vLbl.setAttribute("font-size","8");
+    vLbl.setAttribute("text-anchor","middle"); vLbl.setAttribute("font-weight","bold");
+    vLbl.textContent=s.val+"%";
+    svg.appendChild(vLbl);
+
+    // SDG number box
+    const boxX = x; const boxY = padT+chartH+8; const boxSize = bw;
+    const box = document.createElementNS("http://www.w3.org/2000/svg","rect");
+    box.setAttribute("x",boxX); box.setAttribute("y",boxY);
+    box.setAttribute("width",boxSize); box.setAttribute("height",boxSize*0.7);
+    box.setAttribute("rx","2"); box.setAttribute("fill",s.color);
+    svg.appendChild(box);
+    const numLbl = document.createElementNS("http://www.w3.org/2000/svg","text");
+    numLbl.setAttribute("x",boxX+boxSize/2); numLbl.setAttribute("y",boxY+boxSize*0.7*0.65);
+    numLbl.setAttribute("fill","#fff"); numLbl.setAttribute("font-size","10");
+    numLbl.setAttribute("font-weight","bold"); numLbl.setAttribute("text-anchor","middle");
+    numLbl.textContent=s.id;
+    svg.appendChild(numLbl);
+  });
+}
+drawSDGChart();
+
+// SDG Legend
+const legend = document.getElementById('sdgLegend');
+sdgData.forEach(s => {
+  const item = document.createElement('div');
+  item.style.cssText='display:flex;align-items:center;gap:5px;font-size:9px;color:rgba(122,170,138,0.8);white-space:nowrap;';
+  item.innerHTML=`<span style="width:8px;height:8px;border-radius:1px;background:${s.color};flex-shrink:0;display:inline-block;"></span>${s.id}. ${s.label}`;
+  legend.appendChild(item);
+});
+
+// Climate scenarios
+const scenarios = [
+  {temp:"1.5°C",label:"Paris Aligned",color:"var(--green)",desc:"Category A — Best in class alignment"},
+  {temp:"2°C",label:"Aligned",color:"#b2ff59",desc:"Category B — Moderate alignment"},
+  {temp:"2°C–4°C",label:"Partially Aligned",color:"var(--amber)",desc:"Category C — Improvement needed"},
+  {temp:">4°C",label:"Not Aligned",color:"var(--red)",desc:"Category D — Significant gap"},
+];
+const climDiv = document.getElementById('climateScenarios');
+scenarios.forEach((sc,i) => {
+  const div = document.createElement('div');
+  div.style.cssText=`background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:14px;position:relative;overflow:hidden;`;
+  div.innerHTML=`
+    <div style="position:absolute;top:0;left:0;right:0;height:2px;background:${sc.color};"></div>
+    <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:${sc.color};margin-bottom:4px;">${sc.temp}</div>
+    <div style="font-size:10px;font-weight:600;color:var(--text);letter-spacing:0.1em;margin-bottom:4px;text-transform:uppercase;">${sc.label}</div>
+    <div style="font-size:9px;color:var(--text-muted);">${sc.desc}</div>
+    ${i===0?'<div style="margin-top:8px;font-size:9px;color:var(--green);letter-spacing:0.1em;">✓ CAPGEMINI TRAJECTORY</div>':''}
+  `;
+  climDiv.appendChild(div);
+});
+
+
+document.getElementById('footerDate').textContent = 'Generated: ' + new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}).toUpperCase();
+</script>
+</body>
+</html>
